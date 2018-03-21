@@ -5,7 +5,7 @@ require "bjob/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "bjob"
-  spec.version       = Bjob::VERSION
+  spec.version       = BJob::VERSION
   spec.authors       = ["dm1try"]
   spec.email         = ["me@dmitry.it"]
 

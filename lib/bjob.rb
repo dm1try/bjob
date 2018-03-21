@@ -1,5 +1,5 @@
 require "bjob/version"
 
-module Bjob
+module BJob
   # Your code goes here...
 end

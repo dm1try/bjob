@@ -1,5 +1,5 @@
-RSpec.describe Bjob do
+RSpec.describe BJob do
   it "has a version number" do
-    expect(Bjob::VERSION).not_to be nil
+    expect(BJob::VERSION).not_to be nil
   end
 end
