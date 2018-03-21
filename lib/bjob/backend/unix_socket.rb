@@ -11,6 +11,8 @@ module BJob
     end
 
     def start
+      FileUtils.rm(@path) if File.exist?(@path)
+
       @server         = ::UNIXServer.new(@path)
       @read_sockets   = [@server]
 
