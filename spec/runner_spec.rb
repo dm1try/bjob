@@ -19,4 +19,18 @@ RSpec.describe BJob::Runner do
       expect(subject.run(job)).to eq(job_result)
     end
   end
+
+  context 'job implementation is missed' do
+    let(:logger) { instance_double(Logger) }
+    subject { described_class.new(logger: logger) }
+
+    before do
+      job.update('class' => 'UndefinedClass')
+    end
+
+    it 'logs warning and does not run a job' do
+      expect(logger).to receive(:warn).with(/UndefinedClass/)
+      subject.run(job)
+    end
+  end
 end
