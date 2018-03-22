@@ -1,7 +1,10 @@
 require 'bjob/coordinator'
+require 'bjob/test/runner'
 
 RSpec.describe BJob::Coordinator do
   let(:job) { {'class' => 'SomeJob', 'method' => 'run', 'params' => [] } }
+
+  subject { described_class.new(runner: BJob::Test::Runner) }
 
   describe '#start' do
     it 'runs a pool of threads for doing work' do
@@ -19,11 +22,27 @@ RSpec.describe BJob::Coordinator do
   context 'coordinator started' do
     before do
       subject.start
+      BJob::Test::Runner.reset
     end
 
     it 'schedules a job for processing in pool' do
-      expect_any_instance_of(BJob::Runner).to receive(:run).with(job)
-      expect(subject.schedule(job)).to eq(:ok)
+      subject.schedule(job)
+      subject.stop
+
+      expect(processed_jobs.first).to eq(job)
+    end
+
+    it 'schedules many jobs' do
+      subject.schedule(job)
+      subject.schedule(job)
+      subject.schedule(job)
+
+      expect(processed_jobs.count).to eq(3)
+    end
+
+    def processed_jobs
+      subject.stop
+      BJob::Test::Runner.jobs
     end
   end
 end
