@@ -5,14 +5,23 @@ module BJob
     def initialize(pool_size: 16)
       @running_queue = Queue.new
       @pool_size = pool_size
+      @job_threads = []
     end
 
     def start
-      @pool_size.times do
-        Thread.new do
-          loop do
-            job = @running_queue.pop
-            BJob::Runner.new.run(job)
+      @job_threads = @pool_size.times.map do
+        Thread.handle_interrupt(RuntimeError => :never) do
+          Thread.new do
+            loop do
+              # allow kill a thread only on blocking by an empty queue
+              job = Thread.handle_interrupt(RuntimeError => :on_blocking) do
+                @running_queue.pop
+              rescue
+                Thread.exit
+              end
+
+              ::BJob::Runner.new.run(job)
+            end
           end
         end
       end
@@ -22,6 +31,11 @@ module BJob
       @running_queue.push(job)
 
       :ok
+    end
+
+    def stop
+      @job_threads.each{ |thread| thread.raise('shutdown') }
+      @job_threads.each(&:join)
     end
   end
 end

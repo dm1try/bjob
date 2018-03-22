@@ -9,6 +9,13 @@ RSpec.describe BJob::Coordinator do
     end
   end
 
+  describe '#stop' do
+    it 'shutdown workers pool' do
+      subject.start
+      expect { subject.stop }.to change{ Thread.list.count }.by(-16)
+    end
+  end
+
   context 'coordinator started' do
     before do
       subject.start
