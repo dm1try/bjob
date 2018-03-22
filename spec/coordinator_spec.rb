@@ -1,7 +1,7 @@
 require 'bjob/coordinator'
 
 RSpec.describe BJob::Coordinator do
-  let(:job) { {some: :job} }
+  let(:job) { {'class' => 'SomeJob', 'method' => 'run', 'params' => [] } }
 
   describe '#start' do
     it 'runs a pool of threads for doing work' do
@@ -9,7 +9,14 @@ RSpec.describe BJob::Coordinator do
     end
   end
 
-  it 'schedules a job' do
-    expect(subject.schedule(job)).to eq(:ok)
+  context 'coordinator started' do
+    before do
+      subject.start
+    end
+
+    it 'schedules a job for processing in pool' do
+      expect_any_instance_of(BJob::Runner).to receive(:run).with(job)
+      expect(subject.schedule(job)).to eq(:ok)
+    end
   end
 end
