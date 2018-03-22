@@ -3,11 +3,12 @@ require 'securerandom'
 
 module BJob
   class Coordinator
-    def initialize(pool_size: 16, runner: ::BJob::Runner)
+    def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger)
       @running_queue = Queue.new
       @pool_size = pool_size
       @job_threads = []
       @runner = runner
+      @logger = logger
     end
 
     def start
