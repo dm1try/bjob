@@ -40,6 +40,12 @@ RSpec.describe BJob::Coordinator do
       expect(processed_jobs.count).to eq(3)
     end
 
+    it 'generates job id' do
+      subject.schedule(job)
+
+      expect(processed_jobs.last['id']).to satisfy { |id| id.is_a?(String) && id.size == 10 }
+    end
+
     def processed_jobs
       subject.stop
       BJob::Test::Runner.jobs

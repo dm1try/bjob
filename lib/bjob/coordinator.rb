@@ -1,4 +1,5 @@
 require_relative 'runner'
+require 'securerandom'
 
 module BJob
   class Coordinator
@@ -29,6 +30,7 @@ module BJob
     end
 
     def schedule(job)
+      job['id'] = generate_job_id
       @running_queue.push(job)
 
       :ok
@@ -37,6 +39,12 @@ module BJob
     def stop
       @job_threads.each{ |thread| thread.raise('shutdown') }
       @job_threads.each(&:join)
+    end
+
+    private
+
+    def generate_job_id
+      SecureRandom.hex(5)
     end
   end
 end
