@@ -20,6 +20,12 @@ RSpec.describe BJob::Coordinator do
     end
   end
 
+  describe '#stats' do
+    it do
+      expect(subject.stats).to eq({runtime: {running: 0}})
+    end
+  end
+
   context 'coordinator started' do
     before do
       subject.start

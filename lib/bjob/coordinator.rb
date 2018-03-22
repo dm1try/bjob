@@ -42,6 +42,14 @@ module BJob
       @job_threads.each(&:join)
     end
 
+    def stats
+      {
+        runtime: {
+          running: @running_queue.size
+        }
+      }
+    end
+
     private
 
     def generate_job_id
