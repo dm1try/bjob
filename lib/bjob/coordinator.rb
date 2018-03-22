@@ -2,10 +2,11 @@ require_relative 'runner'
 
 module BJob
   class Coordinator
-    def initialize(pool_size: 16)
+    def initialize(pool_size: 16, runner: ::BJob::Runner)
       @running_queue = Queue.new
       @pool_size = pool_size
       @job_threads = []
+      @runner = runner
     end
 
     def start
@@ -20,7 +21,7 @@ module BJob
                 Thread.exit
               end
 
-              ::BJob::Runner.new.run(job)
+              @runner.new.run(job)
             end
           end
         end
