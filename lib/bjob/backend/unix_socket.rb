@@ -32,7 +32,12 @@ module BJob
           @read_sockets << conn
         else
           message = socket.gets
-          return if message.nil? # socket closed
+
+          if message.nil?
+            socket.close_read
+            @read_sockets.delete(socket)
+            return
+          end
 
           job_request = decode_message(message)
           process_job(job_request)
