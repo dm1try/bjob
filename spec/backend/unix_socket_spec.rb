@@ -20,6 +20,7 @@ RSpec.describe BJob::Backend::UNIXSocket do
       expect(coordinator).to receive(:schedule).with(some_job)
 
       subject.start
+      sleep 0.1 # TODO: re-check
       send_request
     end
 
