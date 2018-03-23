@@ -1,6 +1,7 @@
 require_relative '../backend'
 require 'socket'
 require 'json'
+require 'fileutils'
 
 module BJob
   class Backend::UNIXSocket < Backend
