@@ -9,7 +9,7 @@ module BJob
       coordinator = ::BJob::Coordinator.new
 
       backends = []
-      socket_path = ENV['socket_path'] || '/tmp/bjob_socket'
+      socket_path = ENV['BJOB_SOCKET_PATH'] || '/tmp/bjob_socket'
       unix_socket_backend = ::BJob::Backend::UNIXSocket.new(coordinator: coordinator, path: socket_path)
       backends << unix_socket_backend
 
