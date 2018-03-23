@@ -1,4 +1,6 @@
 require "bundler/setup"
+
+ENV['BJOB_ENV'] ||= 'test'
 require "bjob"
 
 RSpec.configure do |config|
