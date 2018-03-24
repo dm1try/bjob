@@ -3,14 +3,17 @@ require 'securerandom'
 
 module BJob
   class Coordinator
-    def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger, running_queue: nil, waiting_queue: nil)
+    def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger, running_queue: nil, waiting_queue: nil, on_stop: nil)
       @running_queue = running_queue || SizedQueue.new(pool_size)
       @waiting_queue = waiting_queue || Queue.new
       @pool_size = pool_size
       @job_threads = []
       @runner = runner
       @logger = logger
-
+      @on_stop = on_stop || ->(waiting_queue) {
+        size = waiting_queue.size
+        @logger.warn("#{size} jobs are lost") if size > 0
+      }
     end
 
     def start
@@ -54,6 +57,7 @@ module BJob
     def stop
       @job_threads.each{ |thread| thread.raise('shutdown') }
       @job_threads.each(&:join)
+      @on_stop.call(@waiting_queue)
     end
 
     def stats

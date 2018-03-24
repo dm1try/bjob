@@ -94,4 +94,13 @@ RSpec.describe BJob::Coordinator do
       BJob::Test::Runner.jobs
     end
   end
+
+  describe 'on_stop callback' do
+    let(:waiting_queue) { instance_double(Queue) }
+
+    it 'calls a provided callback with a waiting queue on stopping' do
+      callback = ->(queue) { expect(queue).to eq(waiting_queue) }
+      described_class.new(waiting_queue: waiting_queue, on_stop: callback).stop
+    end
+  end
 end
