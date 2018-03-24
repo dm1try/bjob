@@ -16,6 +16,12 @@ module BJob
         key, job_dump = @db.shift
         JSON.load(job_dump) if job_dump
       end
+
+      def close
+        @db.close
+      rescue SDBMError
+        nil
+      end
     end
   end
 end

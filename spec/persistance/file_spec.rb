@@ -14,4 +14,10 @@ RSpec.describe BJob::Persistance::File do
     expect(subject.shift).to eq(some_job)
     expect(subject.shift).to eq(another_job)
   end
+
+  describe '#close' do
+    it do
+      expect(subject.close).to eq(nil)
+    end
+  end
 end
