@@ -22,7 +22,7 @@ RSpec.describe BJob::Coordinator do
 
   describe '#stats' do
     it do
-      expect(subject.stats).to eq({runtime: {running: 0}})
+      expect(subject.stats).to eq({runtime: {running: 0, waiting: 0}})
     end
   end
 

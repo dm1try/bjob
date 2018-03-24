@@ -59,7 +59,8 @@ module BJob
     def stats
       {
         runtime: {
-          running: @running_queue.size
+          running: @running_queue.size,
+          waiting: @waiting_queue.size
         }
       }
     end
