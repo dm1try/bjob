@@ -3,15 +3,19 @@ require 'securerandom'
 
 module BJob
   class Coordinator
-    def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger)
-      @running_queue = Queue.new
+    def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger, running_queue: nil, waiting_queue: nil)
+      @running_queue = running_queue || SizedQueue.new(pool_size)
+      @waiting_queue = waiting_queue || Queue.new
       @pool_size = pool_size
       @job_threads = []
       @runner = runner
       @logger = logger
+
     end
 
     def start
+      start_scheduler_thread
+
       @job_threads = @pool_size.times.map do
         Thread.handle_interrupt(RuntimeError => :never) do
           Thread.new do
@@ -32,9 +36,19 @@ module BJob
 
     def schedule(job)
       job['id'] = generate_job_id
-      @running_queue.push(job)
-
+      @running_queue.push(job, true)
+    rescue ThreadError
+      @waiting_queue.push(job)
+    ensure
       :ok
+    end
+
+    def start_scheduler_thread
+      Thread.new do
+        while job = @waiting_queue.pop
+          @running_queue.push(job)
+        end
+      end
     end
 
     def stop
