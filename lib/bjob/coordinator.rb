@@ -49,17 +49,32 @@ module BJob
     end
 
     def start_scheduler_thread
-      @scheduler_thread = Thread.new do
-        while job = @waiting_queue.pop
-          @running_queue.push(job)
+      Thread.handle_interrupt(RuntimeError => :never) do
+        @scheduler_thread = Thread.new do
+          Thread.handle_interrupt(RuntimeError => :on_blocking) do
+            while job = @waiting_queue.pop
+              Thread.handle_interrupt(RuntimeError => :on_blocking) do
+                @running_queue.push(job)
+              rescue
+                @waiting_queue.push(job)
+                Thread.exit
+              end
+            end
+          rescue
+            Thread.exit
+          end
         end
       end
     end
 
     def stop
+      @scheduler_thread.raise('shutdown')
+      @scheduler_thread.join
+
+      @on_stop.call(@waiting_queue)
+
       @job_threads.each{ |thread| thread.raise('shutdown') }
       @job_threads.each(&:join)
-      @on_stop.call(@waiting_queue)
     end
 
     def stats

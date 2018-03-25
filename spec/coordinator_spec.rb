@@ -25,6 +25,10 @@ RSpec.describe BJob::Coordinator do
     it 'stops workers pool' do
       expect { subject.stop }.to change{ subject.job_threads.select(&:alive?).count }.by(-(jobs_pool_size))
     end
+
+    it 'stops scheduler thread' do
+      expect { subject.stop }.to change{ subject.scheduler_thread&.alive? }
+    end
   end
 
   describe '#stats' do
@@ -66,48 +70,89 @@ RSpec.describe BJob::Coordinator do
 
     it 'schedules many jobs' do
       subject.schedule(job)
-      subject.schedule(job)
-      subject.schedule(job)
+      subject.schedule(job.dup)
+      subject.schedule(job.dup)
+      subject.stop
 
       expect(processed_jobs.count).to eq(3)
     end
 
     it 'generates job id' do
       subject.schedule(job)
+      subject.stop
 
       expect(processed_jobs.last['id']).to satisfy { |id| id.is_a?(String) && id.size == 10 }
     end
+  end
 
-    context 'running queue is exhausted' do
-      subject { described_class.new(runner: BJob::Test::Runner, pool_size: 1) }
+  context 'running queue is exhausted' do
+    let(:small_pool_size) { 1 }
+    subject { described_class.new(runner: BJob::Test::Runner, pool_size: small_pool_size) }
 
-      before do
-        allow_any_instance_of(BJob::Test::Runner).to receive(:run).and_wrap_original do |original, *args|
-          sleep 0.01
-          original.call(*args)
-        end
-      end
+    let(:first_job) { {'class' => 'FirstJob', 'method' => 'run', 'params' => [] } }
+    let(:second_job) { {'class' => 'SecondJob', 'method' => 'run', 'params' => [] } }
+    let(:third_job) { {'class' => 'ThirdJob', 'method' => 'run', 'params' => [] } }
 
-      it 'uses waiting queue for the sheduling' do
-        subject.schedule(job)
-        subject.schedule(job)
+    before do
+      BJob::Test::Runner.reset
+      subject.start
+    end
 
-        expect(processed_jobs.count).to eq(2)
+    context 'there is enough time to do the work before shutdown' do
+      let(:time_for_processing) { 0.01 }
+
+      it 'processes all jobs' do
+        subject.schedule(first_job)
+        subject.schedule(second_job)
+        subject.schedule(third_job)
+
+        sleep time_for_processing
+        subject.stop
+
+        expect(processed_jobs.count).to eq(3)
+        expect(processed_jobs).to include(first_job)
+        expect(processed_jobs).to include(second_job)
+        expect(processed_jobs).to include(third_job)
       end
     end
 
-    def processed_jobs
-      subject.stop
-      BJob::Test::Runner.jobs
+    context 'shutdown with remaining work' do
+      let(:on_stop) { ->(waiting_queue){ @waiting_count = waiting_queue.size } }
+      subject { described_class.new(runner: BJob::Test::Runner, pool_size: small_pool_size, on_stop: on_stop) }
+
+      it 'processes some jobs and returns remaining to the waiting queue' do
+        subject.schedule(first_job)
+        subject.schedule(second_job)
+        subject.schedule(third_job)
+
+        subject.stop
+
+        expect(processed_jobs.count + @waiting_count).to eq(3)
+      end
     end
   end
 
   describe 'on_stop callback' do
-    let(:waiting_queue) { instance_double(Queue) }
+    let(:waiting_queue) { Queue.new }
 
     it 'calls a provided callback with a waiting queue on stopping' do
       callback = ->(queue) { expect(queue).to eq(waiting_queue) }
-      described_class.new(waiting_queue: waiting_queue, on_stop: callback).stop
+
+      coordinator = described_class.new(waiting_queue: waiting_queue, on_stop: callback)
+      coordinator.start
+      coordinator.stop
     end
+  end
+
+  def processed_jobs
+    retry_count = 0
+    loop do
+      raise 'working threads still alive' if retry_count > 3
+      break if subject.job_threads.select(&:alive?).count.zero?
+      sleep 0.1
+      retry_count +=1
+    end
+
+    BJob::Test::Runner.jobs
   end
 end
