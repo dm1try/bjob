@@ -23,11 +23,11 @@ module BJob
           config.concurrency = v
         end
 
-        opts.on("", "--unix-socket-path UNIX_SOCKET_PATH", "socket path for listening for job requests") do |v|
+        opts.on("-s", "--unix-socket-path PATH", "socket path for listening for job requests") do |v|
           config.unix_socket_path = v
         end
 
-        opts.on("", "--saved-jobs-path SAVED_JOBS_PATH", "path for storing unfinished jobs") do |v|
+        opts.on("-b", "--saved-jobs-path PATH", "backup path for storing unfinished jobs") do |v|
           config.saved_jobs_path = v
         end
       end.parse!
