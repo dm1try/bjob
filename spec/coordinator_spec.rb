@@ -9,14 +9,21 @@ RSpec.describe BJob::Coordinator do
 
   describe '#start' do
     it 'runs a pool of threads for doing work' do
-      expect { subject.start }.to change{ Thread.list.count }.by_at_least(jobs_pool_size)
+      expect { subject.start }.to change{ subject.job_threads.select(&:alive?).count }.by(jobs_pool_size)
+    end
+
+    it 'runs scheduler thread' do
+      expect { subject.start }.to change{ subject.scheduler_thread&.alive? }
     end
   end
 
   describe '#stop' do
-    it 'shutdown workers pool' do
+    before do
       subject.start
-      expect { subject.stop }.to change{ Thread.list.count }.by_at_least(-(jobs_pool_size))
+    end
+
+    it 'stops workers pool' do
+      expect { subject.stop }.to change{ subject.job_threads.select(&:alive?).count }.by(-(jobs_pool_size))
     end
   end
 

@@ -3,6 +3,8 @@ require 'securerandom'
 
 module BJob
   class Coordinator
+    attr_reader :job_threads, :scheduler_thread
+
     def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger, running_queue: nil, waiting_queue: nil, on_stop: nil)
       @running_queue = running_queue || SizedQueue.new(pool_size)
       @waiting_queue = waiting_queue || Queue.new
@@ -47,7 +49,7 @@ module BJob
     end
 
     def start_scheduler_thread
-      Thread.new do
+      @scheduler_thread = Thread.new do
         while job = @waiting_queue.pop
           @running_queue.push(job)
         end
