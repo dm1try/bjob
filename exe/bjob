@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require "bjob"
+require "bjob/application"
+
+config = BJob::Config.from_argv
+BJob::Application.new.start(config)
