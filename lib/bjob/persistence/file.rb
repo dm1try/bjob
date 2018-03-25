@@ -2,7 +2,7 @@ require 'sdbm'
 require 'json'
 
 module BJob
-  module Persistance
+  module Persistence
     class File
       def initialize(filename:)
         @db = SDBM.open(filename)

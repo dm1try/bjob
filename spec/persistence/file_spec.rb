@@ -1,6 +1,6 @@
 require 'bjob/persistence/file'
 
-RSpec.describe BJob::Persistance::File do
+RSpec.describe BJob::Persistence::File do
   let(:filename) { '/tmp/bjob_persisted_work' }
   subject { described_class.new(filename: filename) }
 
