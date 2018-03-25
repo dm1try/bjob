@@ -30,11 +30,13 @@ module BJob
       unix_socket_backend = ::BJob::Backend::UNIXSocket.new(coordinator: coordinator, path: socket_path)
       backends << unix_socket_backend
 
-      trap('INT') do
-        puts "\nwaiting for completion running jobs..."
-        coordinator.stop
-        puts 'Bye-Bye!'
-        exit 0
+      ['TSTP', 'TERM', 'INT'].each do |stop_signal|
+        trap(stop_signal) do
+          puts "\nwaiting for completion running jobs..."
+          coordinator.stop
+          puts 'Bye-Bye!'
+          exit 0
+        end
       end
 
       trap('USR1') do
