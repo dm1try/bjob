@@ -1,15 +1,15 @@
 # BJob
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/bjob`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Simple background processing without any external dependencies(only Ruby core library is used).
+Jobs are executed in a separate process(UNIX sockets are used for inter-process communication).
+Jobs are persisted in memory but there is a fallback file-based storage strategy for unfinished jobs.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'bjob'
+gem 'bjob', require 'bjob/async'
 ```
 
 And then execute:
@@ -21,8 +21,31 @@ Or install it yourself as:
     $ gem install bjob
 
 ## Usage
+```ruby
+# job.rb
+require 'bjob/async'
 
-TODO: Write usage instructions here
+class Job
+  include BJob::Async
+
+  def run(some_message)
+    p "UPCASED: #{some_message.upcase}"
+  end
+end
+```
+
+1. run `bjob -r job` in terminal #1
+2. run `ruby -I. -r job -e 'Job.async("message")'` in terminal #2
+
+terminal #1 output should be something like this:
+```
+I, [2018-03-26T13:14:09.876185 #53274]  INFO -- : job #f7a8ac4081 started
+"UPCASED: MESSAGE"
+I, [2018-03-26T13:14:09.876343 #53274]  INFO -- : job #f7a8ac4081 done: 3.8e-05 ms
+
+```
+
+TODO: Write usage instructions for integration with frameworks.
 
 ## Development
 
