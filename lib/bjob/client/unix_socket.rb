@@ -4,18 +4,29 @@ require 'json'
 
 module BJob
   class Client::UNIXSocket < Client
-    def initialize(path:, fallback: nil)
+    DEFAULT_RETRY_DELAY = 5
+
+    def initialize(path:, fallback: nil, retry_delay: DEFAULT_RETRY_DELAY)
       @path = path
+
       @fallback = fallback
       @disconnected = false
+      @last_retry_time = nil
+      @retry_delay = retry_delay
     end
 
     def connect
       @socket = ::UNIXSocket.new(@path)
-      @disconnected = true if @socket.nil?
+      @disconnected = @socket.nil?
+      self
     rescue Errno::ECONNREFUSED, Errno::ENOENT
       @disconnected = true
-    ensure
+
+      if should_retry?
+        @last_retry_time = Time.now
+        retry
+      end
+
       self
     end
 
@@ -30,11 +41,26 @@ module BJob
       if !@disconnected
         @socket.puts(encode_message(message))
       else
-        @fallback.call(message) if @fallback
+        connect if should_retry?
+
+        if !@disconnected
+          @socket.puts(encode_message(message))
+        elsif @fallback
+          @fallback.call(message)
+        end
       end
+    rescue Errno::EPIPE
+      @socket.close_write
+      @disconnected = true
+      connect
+      retry
     end
 
     private
+
+    def should_retry?
+      @last_retry_time.nil? || ((Time.now - @last_retry_time) > @retry_delay)
+    end
 
     def encode_message(message)
       JSON.dump(message)
