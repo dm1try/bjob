@@ -2,6 +2,10 @@
 
 require "bjob"
 require "bjob/application"
+require "bjob/hosted_application"
 
-config = BJob::Config.from_argv
+hosted_app_config = BJob::HostedApplication::Config.new
+config = BJob::Config.from_argv(hosted_app_config: hosted_app_config)
+
+BJob::HostedApplication.bootstrap(hosted_app_config)
 BJob::Application.new.start(config)

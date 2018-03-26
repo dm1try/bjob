@@ -13,7 +13,7 @@ module BJob
       end
     end
 
-    def self.from_argv
+    def self.from_argv(hosted_app_config: nil)
       config = default.dup
 
       OptionParser.new do |opts|
@@ -29,6 +29,14 @@ module BJob
 
         opts.on("-b", "--saved-jobs-path PATH", "backup path for storing unfinished jobs") do |v|
           config.saved_jobs_path = v
+        end
+
+        opts.on("-r", "--app-boot PATH", "requires a file for booting a hosted app") do |v|
+          hosted_app_config.boot_path = v
+        end
+
+        opts.on("-i", "--app-init PATH", "code for a hosted app initialization") do |v|
+          hosted_app_config.init_cmd = v
         end
       end.parse!
 
