@@ -35,7 +35,7 @@ module BJob
       new(path: path).connect
     end
 
-    def push(class_name:, method:, params:)
+    def push(class_name:, method:, params:,**meta)
       message = {'class' => class_name, 'method' => method, 'params' => params}
 
       if !@disconnected
