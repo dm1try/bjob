@@ -2,6 +2,8 @@ require_relative 'client/unix_socket'
 
 module BJob
   module Async
+    PRIORITIES = {low: -1, normal: 0, high: 1}
+
     def self.included(target)
       target.extend ClassMethods
       target.instance_variable_set(:@meta, {'priority': 0})
@@ -19,18 +21,11 @@ module BJob
 
       def priority(priority)
         new_priority = if priority.is_a?(Symbol)
-          case priority
-          when :low
-            -1
-          when :normal
-            0
-          when :high
-            1
-          else
-            raise 'wrong priority value! allowed values: :low, :normal, :high'
-          end
-        else
+          PRIORITIES[priority] || raise("wrong priority value! allowed values: #{PRIORITIES.keys}")
+        elsif priority.is_a?(Integer)
           priority
+        else
+          raise 'unsupported value!'
         end
 
         meta(priority: new_priority)
