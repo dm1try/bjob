@@ -14,14 +14,15 @@ RSpec.describe BJob::Persistence::SavedQueue do
 
     queue
   end
+  let(:reloaded_queue) { Queue.new }
 
   it 'saves and load in-memory queue' do
     subject.save(initial_queue)
-    loaded_queue = subject.load
+    subject.populate(reloaded_queue)
 
     loaded_items = []
 
-    while item = loaded_queue.shift(true) rescue nil
+    while item = reloaded_queue.shift(true) rescue nil
       loaded_items.push(item)
     end
 

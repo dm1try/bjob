@@ -10,7 +10,8 @@ module BJob
     def start(config = BJob::Config.default)
       saved_queue = BJob::Persistence::SavedQueue.new(filename: config.saved_jobs_path)
 
-      saved_jobs_queue = saved_queue.load
+      saved_jobs_queue = Queue.new
+      saved_queue.populate(saved_jobs_queue)
 
       if saved_jobs_queue.size > 0
         puts "#{saved_jobs_queue.size} jobs are loaded from #{config.saved_jobs_path}"
