@@ -6,6 +6,7 @@ module BJob
 
     def self.included(target)
       target.extend ClassMethods
+      target.extend InlineStub if BJob.inline?
       target.instance_variable_set(:@meta, {'priority': 0})
     end
 
@@ -29,6 +30,12 @@ module BJob
         end
 
         meta(priority: new_priority)
+      end
+    end
+
+    module InlineStub
+      def async(*params)
+        self.new.run(*params)
       end
     end
   end

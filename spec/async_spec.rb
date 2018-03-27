@@ -52,4 +52,17 @@ RSpec.describe 'async job mixin' do
       end
     end
   end
+
+  context 'inline mode' do
+    let(:some_params) { [:some, :params] }
+
+    before do
+      allow(BJob).to receive(:inline?).and_return(true)
+    end
+
+    it 'inlines job method invocation' do
+      expect_any_instance_of(subject).to receive(:run).with(some_params)
+      subject.async(some_params)
+    end
+  end
 end

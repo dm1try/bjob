@@ -26,4 +26,12 @@ module BJob
   def self.logger=(logger)
     @logger = logger
   end
+
+  def self.inline!
+    @inline = true
+  end
+
+  def self.inline?
+    !!@inline
+  end
 end
