@@ -45,4 +45,11 @@ RSpec.describe BJob::PriorityQueue do
       end
     end
   end
+
+  describe '#size' do
+    it do
+      subject.push(1)
+      expect(subject.size).to eq(1)
+    end
+  end
 end

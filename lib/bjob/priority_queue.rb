@@ -31,6 +31,10 @@ module BJob
       end
     end
 
+    def size
+      @items.size - 1
+    end
+
     private
 
     def swim(k)
