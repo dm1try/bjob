@@ -16,6 +16,25 @@ module BJob
       def meta(options)
         @meta.update(options)
       end
+
+      def priority(priority)
+        new_priority = if priority.is_a?(Symbol)
+          case priority
+          when :low
+            -1
+          when :normal
+            0
+          when :high
+            1
+          else
+            raise 'wrong priority value! allowed values: :low, :normal, :high'
+          end
+        else
+          priority
+        end
+
+        meta(priority: new_priority)
+      end
     end
   end
 end

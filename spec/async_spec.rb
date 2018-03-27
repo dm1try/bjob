@@ -34,6 +34,22 @@ RSpec.describe 'async job mixin' do
         subject.meta(meta)
         subject.async
       end
+
+      describe '.priority' do
+        it 'updates priority meta information based on pre-defined values' do
+          expect(client).to receive(:push).with(hash_including(priority: -1))
+          subject.priority(:low)
+          subject.async
+
+          expect(client).to receive(:push).with(hash_including(priority: 0))
+          subject.priority(:normal)
+          subject.async
+
+          expect(client).to receive(:push).with(hash_including(priority: 1))
+          subject.priority(:high)
+          subject.async
+        end
+      end
     end
   end
 end
