@@ -47,6 +47,23 @@ I, [2018-03-26T13:14:09.876343 #53274]  INFO -- : job #f7a8ac4081 done: 3.8e-05 
 
 TODO: Write usage instructions for integration with frameworks.
 
+### Jobs scheduling
+If all working threads are busy then new jobs are pushed to a waiting queue. When some thread is ready for a new work the job is shifted from the waiting queue based on its priority. Priority is a integer value, default value is0. There are some pre-defined symbol "sugar" values like `low(-1)/normal(0)/high(1)`:
+```ruby
+class LowPriorityJob
+  priority -1
+end
+
+class AnotherLowPriorityJob
+  priority :low # same as -1
+end
+
+class VeryCriticalPriorityJobThatShouldBeDoneASAP
+  priority 99
+end
+```
+So the higher priority guarantees that the job will be scheduled for running in the working pool before the jobs with lower priority.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
