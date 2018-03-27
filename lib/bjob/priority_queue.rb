@@ -1,23 +1,34 @@
 module BJob
   class PriorityQueue
-    # based on binary heap
+    include MonitorMixin
+
     UNUSED_ITEM = nil
 
     def initialize(comparator: nil)
+      super()
+      @empty_condition = new_cond
+
       @comparator = comparator || ->(first, second) { first <=> second }
       @items = [UNUSED_ITEM]
     end
 
     def push(item)
-      @items << item
-      swim(@items.size - 1)
+      synchronize do
+        @items << item
+        swim(@items.size - 1)
+        @empty_condition.signal
+      end
     end
 
     def pop
-      exchange(1, @items.size - 1) if @items.size > 2
-      max = @items.pop
-      sink(1) if @items.size > 2
-      max
+      synchronize do
+        @empty_condition.wait_while { @items.size == 1 }
+
+        exchange(1, @items.size - 1) if @items.size > 2
+        max = @items.pop
+        sink(1) if @items.size > 2
+        max
+      end
     end
 
     private

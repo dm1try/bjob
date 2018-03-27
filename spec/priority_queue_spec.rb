@@ -25,7 +25,24 @@ RSpec.describe BJob::PriorityQueue do
       expect(subject.pop).to include({'priority' => 2})
       expect(subject.pop).to include({'priority' => 1})
       expect(subject.pop).to include({'priority' => 1})
-      expect(subject.pop).to be_nil
+    end
+
+  end
+
+  context 'multi-threading' do
+    let(:item) { 1 }
+
+    it 'locks at empty size' do
+      add_item_later
+
+      expect(subject.pop).to eq(item)
+    end
+
+    def add_item_later
+      Thread.new do
+        sleep 0.1
+        subject.push(item)
+      end
     end
   end
 end
