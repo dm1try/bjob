@@ -62,4 +62,10 @@ module BJob
       @items[first], @items[second] = @items[second], @items[first]
     end
   end
+
+  class JobPriorityQueue < PriorityQueue
+    def initialize
+      super(comparator: ->(first, second) { first['priority'] <=> second['priority'] } )
+    end
+  end
 end

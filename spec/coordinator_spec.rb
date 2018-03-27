@@ -83,6 +83,19 @@ RSpec.describe BJob::Coordinator do
 
       expect(processed_jobs.last['id']).to satisfy { |id| id.is_a?(String) && id.size == 10 }
     end
+
+    context 'job has no priority' do
+      before do
+        job.delete('priority')
+      end
+
+      it 'sets default priority to 0' do
+        subject.schedule(job)
+        subject.stop
+
+        expect(processed_jobs.last['priority']).to eq(0)
+      end
+    end
   end
 
   context 'running queue is exhausted' do

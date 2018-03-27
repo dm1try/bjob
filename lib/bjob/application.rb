@@ -3,6 +3,7 @@ require_relative 'runner'
 require_relative 'backend/unix_socket'
 require_relative 'persistence/saved_queue'
 require_relative 'config'
+require_relative 'priority_queue'
 
 module BJob
   class Application
@@ -10,7 +11,7 @@ module BJob
     def start(config = BJob::Config.default)
       saved_queue = BJob::Persistence::SavedQueue.new(filename: config.saved_jobs_path)
 
-      saved_jobs_queue = Queue.new
+      saved_jobs_queue = JobPriorityQueue.new
       saved_queue.populate(saved_jobs_queue)
 
       if saved_jobs_queue.size > 0

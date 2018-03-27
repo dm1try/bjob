@@ -1,4 +1,5 @@
 require_relative 'runner'
+require_relative 'priority_queue'
 require 'securerandom'
 
 module BJob
@@ -7,7 +8,7 @@ module BJob
 
     def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger, running_queue: nil, waiting_queue: nil, on_stop: nil)
       @running_queue = running_queue || SizedQueue.new(pool_size)
-      @waiting_queue = waiting_queue || Queue.new
+      @waiting_queue = waiting_queue || JobPriorityQueue.new
       @pool_size = pool_size
       @job_threads = []
       @runner = runner
@@ -41,6 +42,7 @@ module BJob
 
     def schedule(job)
       job['id'] = generate_job_id
+      job['priority'] = 0 if job['priority'].nil?
       @running_queue.push(job, true)
     rescue ThreadError
       @waiting_queue.push(job)
