@@ -6,7 +6,7 @@ module BJob
 
     def run(job)
       @logger.info("job ##{job['id']} started")
-      start_time = Time.now
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       job_const =
         begin
@@ -21,7 +21,7 @@ module BJob
 
       begin
         result = job_const.new.send(method, *params)
-        @logger.info("job ##{job['id']} done: #{elapsed_time(start_time)} ms")
+        @logger.info("job ##{job['id']} done: #{elapsed_time(start_time)} s")
         result
       rescue StandardError => error
         @logger.error("job ##{job['id']} failed: #{error}")
@@ -32,7 +32,7 @@ module BJob
     private
 
     def elapsed_time(start_time)
-      Time.now - start_time
+      Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
     end
   end
 end
