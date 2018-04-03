@@ -4,8 +4,6 @@ require 'securerandom'
 
 module BJob
   class WorkingPool
-    # TODO: rename to WorkingPool ?
-
     attr_reader :job_threads, :scheduler_thread
 
     def initialize(pool_size: 16, runner: ::BJob::Runner, logger: BJob.logger, running_queue: nil, waiting_queue: nil, on_stop: nil)
