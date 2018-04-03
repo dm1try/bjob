@@ -1,34 +1,22 @@
 module BJob
   class PriorityQueue
-    include MonitorMixin
-
     UNUSED_ITEM = nil
 
     def initialize(comparator: nil)
-      super()
-      @empty_condition = new_cond
-
       @comparator = comparator || ->(first, second) { first <=> second }
       @items = [UNUSED_ITEM]
     end
 
     def push(item)
-      synchronize do
-        @items << item
-        swim(@items.size - 1)
-        @empty_condition.signal
-      end
+      @items << item
+      swim(@items.size - 1)
     end
 
     def pop
-      synchronize do
-        @empty_condition.wait_while { @items.size == 1 }
-
-        exchange(1, @items.size - 1) if @items.size > 2
-        max = @items.pop
-        sink(1) if @items.size > 2
-        max
-      end
+      exchange(1, @items.size - 1) if @items.size > 2
+      max = @items.pop
+      sink(1) if @items.size > 2
+      max
     end
 
     def size
@@ -63,9 +51,4 @@ module BJob
     end
   end
 
-  class JobPriorityQueue < PriorityQueue
-    def initialize
-      super(comparator: ->(first, second) { first['priority'] <=> second['priority'] } )
-    end
-  end
 end
