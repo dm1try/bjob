@@ -1,7 +1,7 @@
-require 'bjob/coordinator'
+require 'bjob/working_pool'
 require 'bjob/test/runner'
 
-RSpec.describe BJob::Coordinator do
+RSpec.describe BJob::WorkingPool do
   let(:job) { {'class' => 'SomeJob', 'method' => 'run', 'params' => [] } }
   let(:jobs_pool_size) { 4 }
 
@@ -55,7 +55,7 @@ RSpec.describe BJob::Coordinator do
     end
   end
 
-  context 'coordinator started' do
+  context 'working_pool started' do
     before do
       subject.start
       BJob::Test::Runner.reset
@@ -151,9 +151,9 @@ RSpec.describe BJob::Coordinator do
     it 'calls a provided callback with a waiting queue on stopping' do
       callback = ->(queue) { expect(queue).to eq(waiting_queue) }
 
-      coordinator = described_class.new(waiting_queue: waiting_queue, on_stop: callback)
-      coordinator.start
-      coordinator.stop
+      working_pool = described_class.new(waiting_queue: waiting_queue, on_stop: callback)
+      working_pool.start
+      working_pool.stop
     end
   end
 

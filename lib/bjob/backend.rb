@@ -1,8 +1,8 @@
 module BJob
   class Backend
 
-    def initialize(coordinator:)
-      @coordinator = coordinator
+    def initialize(working_pool:)
+      @working_pool = working_pool
     end
 
     def start
@@ -10,7 +10,7 @@ module BJob
     end
 
     def process_job(job)
-      @coordinator.schedule(job)
+      @working_pool.schedule(job)
     end
   end
 end

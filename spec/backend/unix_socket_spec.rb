@@ -3,10 +3,10 @@ require 'json'
 require 'socket'
 
 RSpec.describe BJob::Backend::UNIXSocket do
-  let(:coordinator) { double(:coordinator, schedule: :ok) }
+  let(:working_pool) { double(:working_pool, schedule: :ok) }
   let(:socket_path) { '/tmp/test_socket' }
 
-  subject { described_class.new(path: socket_path, coordinator: coordinator) }
+  subject { described_class.new(path: socket_path, working_pool: working_pool) }
 
   after do
     FileUtils.rm(socket_path) if File.exist?(socket_path)
@@ -16,8 +16,8 @@ RSpec.describe BJob::Backend::UNIXSocket do
     let(:some_job) { {'some' => 'job'} }
     let(:client_request) { JSON.dump(some_job) }
 
-    it 'transfers request from client to coordinator using unix socket' do
-      expect(coordinator).to receive(:schedule).with(some_job)
+    it 'transfers request from client to working_pool using unix socket' do
+      expect(working_pool).to receive(:schedule).with(some_job)
 
       subject.start
       sleep 0.1 # TODO: re-check

@@ -1,4 +1,4 @@
-require_relative 'coordinator'
+require_relative 'working_pool'
 require_relative 'runner'
 require_relative 'backend/unix_socket'
 require_relative 'persistence/saved_queue'
@@ -25,29 +25,29 @@ module BJob
         end
       end
 
-      coordinator = ::BJob::Coordinator.new(waiting_queue: saved_jobs_queue,
+      working_pool = ::BJob::WorkingPool.new(waiting_queue: saved_jobs_queue,
                                             pool_size: config.concurrency, on_stop: on_stop)
 
       backends = []
-      unix_socket_backend = ::BJob::Backend::UNIXSocket.new(coordinator: coordinator, path: config.unix_socket_path)
+      unix_socket_backend = ::BJob::Backend::UNIXSocket.new(working_pool: working_pool, path: config.unix_socket_path)
       backends << unix_socket_backend
 
       ['TSTP', 'TERM', 'INT'].each do |stop_signal|
         trap(stop_signal) do
           puts "\nwaiting for completion running jobs..."
-          coordinator.stop
+          working_pool.stop
           puts 'Bye-Bye!'
           exit 0
         end
       end
 
       trap('USR1') do
-        puts coordinator.stats
+        puts working_pool.stats
       end
 
       print_hello_message
 
-      coordinator.start
+      working_pool.start
       backends.map(&:start).each(&:join)
     end
 
