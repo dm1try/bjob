@@ -3,7 +3,7 @@ require_relative 'runner'
 require_relative 'backend/unix_socket'
 require_relative 'persistence/saved_queue'
 require_relative 'config'
-require_relative 'priority_queue'
+require_relative 'job_priority_queue'
 
 module BJob
   class Application
